@@ -1,5 +1,5 @@
 const request = require('superagent');
-const { header } = require('./config');
+const { config, header } = require('./config');
 const { mockInitData, mockReqData } = require('./util/mockdata');
 
 const fs = require('fs');
@@ -7,8 +7,7 @@ let session_id;
 try {
   session_id = fs.readFileSync('.sessiondata', { encoding: 'utf8' });
 } catch (e) {
-  session_id = void 0;
-  onErr(e);
+  session_id = config.session_id;
 }
 
 const SCORE_URL = 'https://mp.weixin.qq.com/wxagame/wxagame_getfriendsscore';
@@ -29,12 +28,14 @@ function getInfos() {
  * 提交游戏分数
  */
 function sendScore(times) {
-  const score = process.argv[2];
-  const reqData = score
-    ? mockReqData(times, ~~score, session_id)
-    : mockReqData(times);
+  if (!session_id) {
+     throw new Error('session_id must not be NULL!!');
+  }
+  const score = process.argv[2] ? process.argv[2] : config.score;
+  const reqData = mockReqData(times, ~~score, session_id);
+  const realScore = score ? score : config.score;
   const reqStr = JSON.stringify(reqData);
-  const bakFile = `./__test__/${new Date().toISOString().substr(0, 19)}.bak`;
+  const bakFile = `./__test__/${new Date().toISOString().substr(0, 10)}_${realScore}.bak`;
   fs.writeFile(bakFile, reqStr, 'utf8', onErr);
   return request
     .post(URL)
@@ -89,4 +90,4 @@ function onErr(err) {
   err && console.info(err);
 }
 
-process.argv[3] === 'c' ? check() : start();
+process.argv[2] === 'c' ? check() : start();

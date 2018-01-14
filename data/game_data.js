@@ -12,4 +12,4 @@ files.forEach((file) => {
     datas[key] = action_data.game_data;
 });
 
-module.exports = { datas, game_data: JSON.parse(datas['945']) };
+module.exports = { datas, game_data: JSON.parse(datas['696']) };
